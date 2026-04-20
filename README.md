@@ -27,33 +27,45 @@ docs/            architecture, data dictionary, formulas, runbooks
 
 ## Quickstart (dev)
 
+One command brings a fresh clone all the way up — installs every dependency,
+provisions Postgres + roles, runs migrations, seeds the dev catalog, and
+executes the daily pipeline once so the dashboard has data:
+
 ```bash
-# 1. Tooling
-brew install uv pnpm
-# requires Python 3.13 and Node 20 LTS
-
-# 2. Install deps
-uv sync
-pnpm install
-
-# 3. Copy env (MIAMI_DEV_MODE=1 uses fixtures — no credentials required)
-cp .env.example .env
-
-# 4. Start Postgres (pg_partman + pgvector preinstalled)
-docker compose -f docker-compose.dev.yml up -d
-
-# 5. Apply migrations + seed a tiny catalog
-uv run --package miami-api alembic -c apps/api/alembic.ini upgrade head
-uv run --package miami-api python -m miami_api.scripts.seed_catalog_dev
-
-# 6. Run the daily pipeline once against fixtures
-uv run --package miami-api python -m miami_api.worker.daily_pipeline
-
-# 7. Start API + web
-uv run --package miami-api uvicorn miami_api.main:app --reload --port 8000 &
-pnpm dev
-# open http://localhost:3000
+./scripts/setup.sh
 ```
+
+Idempotent — re-run anytime to reapply migrations or refresh dev state.
+Pass `--no-run` to skip catalog seeding + pipeline (useful for CI).
+
+Then start the two dev servers (in separate terminals):
+
+```bash
+# FastAPI
+set -a && source .env && set +a
+uv run --package miami-api uvicorn miami_api.main:app --reload --port 8000
+
+# Next.js
+pnpm --filter @miami/web dev --port 3001
+```
+
+Open http://localhost:3001 — breakout leaderboard with live scored data.
+
+**What the setup script does** (each step idempotent):
+
+1. Installs `uv`, `node@20`, `pnpm`, `postgresql@17`, `pgvector` via Homebrew if missing.
+2. Starts `postgresql@17` and waits for it to accept connections.
+3. Creates the `miami_owner` superuser and `miami` database if they don't exist.
+4. Copies `.env.example → .env` (preserving any existing `.env`) and patches
+   the DB URLs to `:5432` (native brew port, not the docker-compose `:5433`).
+5. Creates `apps/web/.env.local` with dev tokens for Next.js.
+6. `uv sync --all-packages --all-extras` + `pnpm install`.
+7. `alembic upgrade head` — runs migrations 0001 + 0002 against your local DB.
+8. Seeds 3 cards + 2 sealed products and runs the daily pipeline once against
+   fixtures, producing 9 feature rows + 9 score rows ready for the UI.
+
+**If you prefer docker-compose** — `docker-compose.dev.yml` ships Postgres 16
+with `pg_partman` preloaded. Flip `.env` DB URLs back to `:5433` if you use it.
 
 ## CI checks
 
