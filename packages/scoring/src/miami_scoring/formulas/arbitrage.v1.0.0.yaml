@@ -1,0 +1,25 @@
+name: arbitrage
+version: "1.0.0"
+
+# Grading EV inputs — all as-of-safe.
+# grading_ev = p10 * net_psa10 + p9 * net_psa9 - (raw + grading_fee + fees + capital_cost)
+fee_constants:
+  grading_fee_psa: 25.00
+  shipping_round_trip: 12.00
+  insurance: 5.00
+  marketplace_fee_rate: 0.13
+  sales_tax_buffer_rate: 0.02
+  capital_time_cost_rate_per_day: 0.0003
+  psa_tat_days_default: 35
+
+ebay_dominant_inputs: []
+
+confidence_cap:
+  ebay_weight_threshold: 0.40
+  clamp_to: "Medium"
+
+confidence_label_buckets:
+  High: 0.75
+  Medium: 0.55
+  Low: 0.35
+  Experimental: 0.0

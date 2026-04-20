@@ -1,0 +1,24 @@
+name: long_term
+version: "1.0.0"
+
+weights:
+  fair_value_gap: 0.20
+  character_premium: 0.15
+  scarcity: 0.15
+  product_structure: 0.15
+  low_reprint_risk: 0.10
+  stable_population_growth: 0.10
+  retail_stock_constraint: 0.10
+  anniversary_macro: 0.05
+
+ebay_dominant_inputs: []
+
+confidence_cap:
+  ebay_weight_threshold: 0.40
+  clamp_to: "Medium"
+
+confidence_label_buckets:
+  High: 0.75
+  Medium: 0.55
+  Low: 0.35
+  Experimental: 0.0

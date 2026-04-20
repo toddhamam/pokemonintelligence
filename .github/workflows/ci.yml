@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.13"
+  NODE_VERSION: "20"
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: ghcr.io/cloudnative-pg/postgresql:16
+        env:
+          POSTGRES_USER: miami_owner
+          POSTGRES_PASSWORD: miami_owner
+          POSTGRES_DB: miami
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      MIAMI_DB_URL_OWNER: postgresql+psycopg://miami_owner:miami_owner@localhost:5432/miami
+      MIAMI_DB_URL_APP: postgresql+psycopg://miami_app:miami_app@localhost:5432/miami
+      MIAMI_DB_URL_FEATURE_COMPUTE: postgresql+psycopg://miami_feature_compute:miami_feature_compute@localhost:5432/miami
+      MIAMI_DEV_MODE: "1"
+      FASTAPI_SERVICE_TOKEN: test-service-token
+      PIPELINE_REVALIDATE_TOKEN: test-revalidate-token
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install deps
+        # --all-extras brings in the API package's `dev` extra (ruff, pytest, mypy).
+        # Without this, `uv run ruff` fails with "Failed to spawn: ruff" in a clean env.
+        run: uv sync --all-packages --all-extras
+
+      - name: Ruff lint plus format check
+        run: uv run ruff check . && uv run ruff format --check .
+
+      - name: Apply migrations
+        run: uv run --package miami-api alembic -c apps/api/alembic.ini upgrade head
+
+      - name: Content-hash check on scoring formulas
+        run: uv run --package miami-api python -m miami_api.scripts.verify_formula_hashes
+
+      - name: as_of grep enforcement
+        # Feature code must only read snapshots via *_asof() functions. Direct
+        # reference to a base snapshot table is a silent-lookahead hazard.
+        run: |
+          set -e
+          FORBIDDEN='price_snapshot_daily|graded_snapshot_daily|sealed_snapshot_daily|listing_flow_snapshot|population_snapshot|retail_stock_snapshot'
+          if grep -nE "$FORBIDDEN" -r packages/features/src | grep -v "_asof\|# allowed:"; then
+            echo "Feature code must not reference base snapshot tables directly."
+            exit 1
+          fi
+
+      - name: Seed dev catalog
+        run: uv run --package miami-api python -m miami_api.scripts.seed_catalog_dev
+
+      - name: Run daily pipeline once against dev fixtures
+        run: uv run --package miami-api python -m miami_api.worker.daily_pipeline
+
+      - name: Pytest
+        run: uv run --package miami-api pytest apps/api/tests -v
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile=false
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          FASTAPI_SERVICE_TOKEN: ci-placeholder
+          PIPELINE_REVALIDATE_TOKEN: ci-placeholder
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_placeholder
+          CLERK_SECRET_KEY: sk_test_placeholder

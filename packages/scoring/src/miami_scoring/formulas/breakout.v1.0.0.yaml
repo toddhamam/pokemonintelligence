@@ -1,0 +1,38 @@
+# Breakout formula v1.0.0 — Git is the source of truth.
+# A pre-deploy CI step mirrors this into scoring_formula with content_hash;
+# another CI step asserts the DB hash matches the Git blob.
+name: breakout
+version: "1.0.0"
+
+# Weights applied to pre-z-scored inputs.
+weights:
+  price_momentum_14d: 0.20
+  demand_pressure: 0.20          # listing_flow-derived (eBay-dominant)
+  supply_saturation_shift: 0.20  # eBay-dominant
+  price_band_depletion: 0.15     # eBay-dominant
+  replenishment_inverse: 0.10    # eBay-dominant
+  fair_value_gap_negative: 0.10
+  social_spike: 0.05             # reserved for v2; zero in v1
+
+# The scoring engine treats every input prefixed with ebay_ (above) as contributing
+# to ebay_input_weight. At runtime the engine sums those weights for inputs that
+# actually had data; the sum is the "real" ebay_input_weight of this score.
+ebay_dominant_inputs:
+  - demand_pressure
+  - supply_saturation_shift
+  - price_band_depletion
+  - replenishment_inverse
+
+# Live confidence cap: enforced in engine.score() Python code, NOT just here.
+# If ebay_input_weight > threshold AND trailing_cross_source_agreement=false, the
+# confidence_label is clamped to Medium regardless of formula output.
+confidence_cap:
+  ebay_weight_threshold: 0.40
+  clamp_to: "Medium"
+
+# Confidence label buckets applied to the computed confidence_raw.
+confidence_label_buckets:
+  High: 0.75
+  Medium: 0.55
+  Low: 0.35
+  Experimental: 0.0
