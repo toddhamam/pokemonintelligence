@@ -1,0 +1,144 @@
+:root {
+  --miami-bg: #0b0e13;
+  --miami-panel: #11151d;
+  --miami-ink: #e6ebf2;
+  --miami-dim: #8a93a6;
+  --miami-accent: #4ea9ff;
+  --miami-warn: #f1b24a;
+  --miami-danger: #e85f7a;
+  --miami-ok: #4ad69c;
+  --miami-border: #1e2534;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--miami-bg);
+  color: var(--miami-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, Inter, "Segoe UI", Roboto,
+    Helvetica, Arial;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+a {
+  color: var(--miami-accent);
+  text-decoration: none;
+}
+
+.miami-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.miami-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.miami-header h1 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
+
+.miami-subtitle {
+  color: var(--miami-dim);
+  font-size: 13px;
+}
+
+.miami-card {
+  background: var(--miami-panel);
+  border: 1px solid var(--miami-border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.miami-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.miami-table th,
+.miami-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--miami-border);
+  font-variant-numeric: tabular-nums;
+}
+
+.miami-table th {
+  color: var(--miami-dim);
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.miami-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.miami-badge.high {
+  background: rgba(74, 214, 156, 0.12);
+  color: var(--miami-ok);
+}
+
+.miami-badge.medium {
+  background: rgba(241, 178, 74, 0.12);
+  color: var(--miami-warn);
+}
+
+.miami-badge.low,
+.miami-badge.experimental {
+  background: rgba(232, 95, 122, 0.12);
+  color: var(--miami-danger);
+}
+
+.miami-score {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.miami-score.pos {
+  color: var(--miami-ok);
+}
+
+.miami-score.neg {
+  color: var(--miami-danger);
+}
+
+.miami-warmup {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  background: rgba(138, 147, 166, 0.15);
+  color: var(--miami-dim);
+  margin-left: 8px;
+}
+
+.miami-detail-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .miami-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}

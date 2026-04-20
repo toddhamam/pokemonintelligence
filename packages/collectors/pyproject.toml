@@ -1,0 +1,18 @@
+[project]
+name = "miami-collectors"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "miami-common",
+    "miami-domain",
+    "miami-matching",
+    "httpx>=0.27",
+    "tenacity>=9.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/miami_collectors"]

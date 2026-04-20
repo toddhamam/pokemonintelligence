@@ -1,0 +1,19 @@
+{
+  "name": "miami-root",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20.11",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @miami/web dev",
+    "build": "pnpm --filter @miami/web build",
+    "start": "pnpm --filter @miami/web start",
+    "lint": "pnpm --filter @miami/web lint",
+    "typecheck": "pnpm --filter @miami/web typecheck",
+    "generate-api-client": "pnpm --filter @miami/web generate-api-client",
+    "diff-api-client": "pnpm --filter @miami/web diff-api-client"
+  }
+}

@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.env.local
+.env.*.local
+!.env.example
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Node
+node_modules/
+.next/
+.turbo/
+.pnpm-store/
+*.tsbuildinfo
+
+# uv
+.uv/
+uv.lock
+
+# Vercel
+.vercel
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude runtime state (scheduled tasks, wakeup locks)
+.claude/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Local dev
+.local/
+dump.rdb
+pgdata/
+
+# Generated
+apps/web/src/generated/*
+!apps/web/src/generated/.gitkeep
+
+# Logs
+*.log
+
+# Build artifacts
+dist/
+build/

@@ -1,0 +1,24 @@
+services:
+  postgres:
+    # pg_partman + pgvector pre-installed
+    image: ghcr.io/cloudnative-pg/postgresql:16
+    command: >
+      postgres
+      -c shared_preload_libraries='pg_partman_bgw,pg_stat_statements'
+      -c pg_partman_bgw.interval=60
+    environment:
+      POSTGRES_USER: miami_owner
+      POSTGRES_PASSWORD: miami_owner
+      POSTGRES_DB: miami
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U miami_owner -d miami"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
